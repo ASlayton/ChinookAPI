@@ -18,9 +18,10 @@ namespace ChinookAPI.Controllers
             _eStorage = new EmployeeStorage();
         }
 
-        [HttpGet()]
+        [HttpGet("ex1")]
         public IActionResult GetSalesAgents()
         {
+            //Gives an error- dictionary has multiple 
             return Ok(_eStorage.GetSalesAgents());
         }
 
@@ -30,10 +31,16 @@ namespace ChinookAPI.Controllers
             return Ok(_eStorage.GetById(id));
         }
 
-        [HttpGet]
+        [HttpGet("ex2")]
         public IActionResult GetTable()
         {
             return Ok(_eStorage.Number2());
+        }
+
+        [HttpGet("ex3")]
+        public IActionResult getCounts()
+        {
+            return Ok(_eStorage.Number3());
         }
     }
 }

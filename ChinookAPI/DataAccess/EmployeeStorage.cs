@@ -106,5 +106,26 @@ namespace ChinookAPI.DataAccess
                 return table;
             }
         }
+
+        /******************************************************
+        Exercise 3:
+        Looking at the InvoiceLine table, provide an endpoint 
+        that COUNTs the number of line items for an Invoice 
+        with a parameterized Id from user input
+        ******************************************************/
+
+        public DataTable Number3()
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = @"";
+
+                var table = new DataTable();
+                table.Load(command.ExecuteReader());
+                return table;
+            }
+        }
     }
 }
