@@ -1,6 +1,7 @@
 ﻿using ChinookAPI.Models;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace ChinookAPI.DataAccess
 {
     public class EmployeeStorage
     {
-        static List<Employee> _cStorage = new List<Employee>();
+        static List<Employee> _eStorage = new List<Employee>();
         Dictionary<string, int> agents = new Dictionary<string, int>();
         private const string ConnectionString = "Server=(local);Database=Chinook;Trusted_Connection=True;";
 
@@ -25,7 +26,9 @@ namespace ChinookAPI.DataAccess
             {
                 db.Open();
                 var command = db.CreateCommand();
-                command.CommandText = @"select FullName = e.FirstName + ' ' + e.LastName, i.InvoiceId
+                command.CommandText = @"select 
+                                          FullName = e.FirstName + ' ' + e.LastName,
+                                          i.InvoiceId
                                         from Customer c
                                         join Employee e
                                           on c.SupportRepId = e.EmployeeId
@@ -37,6 +40,70 @@ namespace ChinookAPI.DataAccess
                     agents.Add(reader["FullName"].ToString(), (int) reader["InvoiceId"]);
                 }
                 return agents;
+            }
+        }
+
+        public Employee GetById(int id)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = @"select *
+                                        from Employee
+                                        where EmployeeId = @id";
+                command.Parameters.AddWithValue("@id", id);
+                var reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    var Employee = new Employee
+                    {
+                        LastName = reader["LastName"].ToString(),
+                        FirstName = reader["FirstName"].ToString(),
+                        Title = reader["Title"].ToString(),
+                        ReportsTo = (int)reader["ReportsTo"],
+                        Address = reader["Address"].ToString(),
+                        City = reader["City"].ToString(),
+                        State = reader["State"].ToString(),
+                        Country = reader["Country"].ToString(),
+                        PostalCode = reader["PostalCode"].ToString(),
+                        Phone = reader["Phone"].ToString(),
+                        Fax = reader["Fax"].ToString(),
+                        Email = reader["Email"].ToString()
+                    };
+                    return Employee;
+                }
+                return null;
+            }
+        }
+
+        /******************************************************
+        Exercise 2:
+        Provide an endpoint that shows the Invoice Total, 
+        Customer name, Country and Sale Agent name for all
+        invoices.
+        ******************************************************/
+        public DataTable Number2()
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                var command = connection.CreateCommand();
+                command.CommandText = @"select 
+                                          i.InvoiceId,
+                                          i.Total,
+                                          CustomerName = c.FirstName + ' ' + c.LastName,
+                                          i.BillingCountry,
+                                          SalesAgent = e.FirstName + ' ' + e.LastName
+                                        from Invoice i
+                                        join Customer c
+                                          on i.CustomerId = c.CustomerId
+                                        join Employee e
+                                          on c.SupportRepId = e.EmployeeId";
+                
+                var table = new DataTable();
+                table.Load(command.ExecuteReader());
+                return table;
             }
         }
     }
